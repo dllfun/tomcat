@@ -24,12 +24,18 @@ import org.junit.Test;
 
 public class TestMessageFactory {
 
+    private static final Integer ZERO = Integer.valueOf(0);
+
     MessageFactory messageFactory = new MessageFactory(ResourceBundle.getBundle("org.apache.el.util.TestStrings"));
 
     @Test
     public void testFormatNone() {
         String input = "1E+2";
-        String result = messageFactory.getInternal("messageFactory.formatNone", new BigDecimal(input));
+        // Trailing '0" is an extra Number argument, not printed by the
+        // message pattern. It reflects the case when a translation has not
+        // been updated with new arguments.
+        String result =
+                messageFactory.getInternal("messageFactory.formatNone", new BigDecimal(input), ZERO /*ignored*/);
         // Should be unchanged
         Assert.assertEquals(input, result);
     }
@@ -40,5 +46,22 @@ public class TestMessageFactory {
         String result = messageFactory.getInternal("messageFactory.formatNumeric", new BigDecimal(input));
         // Should be formatted as an integer
         Assert.assertEquals("100", result);
+    }
+
+    @Test
+    public void testFormatChoice() {
+        String input = "1E+2";
+        String result =
+                messageFactory.getInternal("messageFactory.formatChoice", new BigDecimal(input), ZERO /*ignored*/);
+        // Should be formatted as an integer
+        Assert.assertEquals("100 is enough", result);
+    }
+
+    @Test
+    public void testFormatNoArguments() {
+        String input = "1E+2";
+        String result =
+                messageFactory.getInternal("messageFactory.formatNoArguments", new BigDecimal(input), ZERO /*ignored*/);
+        Assert.assertEquals("A message", result);
     }
 }
